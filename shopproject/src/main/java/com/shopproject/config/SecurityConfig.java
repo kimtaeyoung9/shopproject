@@ -4,25 +4,21 @@ import com.shopproject.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity//1
-public class SecurityConfig extends WebSecurityConfigurerAdapter {//2
-    //1,2
-    //WebSecurityConfigurerAdapter를 상속받는 클래스에 @EnalbeWebSecurity 어노테이션을 선언하면
-    //SpringSecurityFilterChain이 자동으로 포함됩니다.
-    //WebSecurityConfigurerAdapter를 상속받아서 메소드 오버라이딩을 통해 보안 설정을 커스터 마이징할 수 있습니다.
-   @Autowired
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    //WebSecurityConfigurerAdapter deprecated로 인한 SecurityConfig 파일 수정
+    @Autowired
     MemberService memberService;
-
     @Override
     protected void configure(HttpSecurity http) throws Exception{//3
         //3
@@ -40,10 +36,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {//2
            ;
 
    http.authorizeRequests()//시큐리티 처리에 HttpServletRequest를 이용한다는 것을 의미
-           .mvcMatchers("/","/members/**",
-                   "/item/**","/images/**").permitAll()//premitAll을 통해 모든 사용자가 로그인 없이 해당 경로를 접근할수 있도록 설정
+           .mvcMatchers("/","/members/**","/item/**","/images/**").permitAll()//premitAll을 통해 모든 사용자가 로그인 없이 해당 경로를 접근할수 있도록 설정
            //메인페이지,회원 관련 URL 상품상세 페이지 ,상품 이미지를 불러오는 경로가 이에 해당합니다.
-           .mvcMatchers("/admin/**").hasRole("ADMIN")//.admin으로 시작하는 경로는 해당 계정이 ADMIN Role일 경우에만 접근가능
+           .mvcMatchers("/admin/**").hasRole("ADMIN")
+           //.admin으로 시작하는 경로는 해당 계정이 ADMIN Role일 경우에만 접근가능
            .anyRequest().authenticated()// 위에 설정해준 경로를 제외한 나머지 경로들은 모드 인증을 요구하도록 설정합니다.
            ;
 
@@ -52,10 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {//2
                    (new CustomAuthenticationEntryPoint())//인증되지 않은 사용자가 리소스에 접근하였을 떄 수행되는 핸들러를 등록합니다.
            ;
     }
-    @Override
-    public void configure(WebSecurity web) throws Exception{
-        web.ignoring().antMatchers("/css/**","/js/**","/img/**");//static 디렉터리의 하위 파일은 인증을 무시하도록 설정합니다
-    }
+
     @Bean
     public PasswordEncoder passwordEncoder(){//4
         //4
@@ -64,12 +57,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {//2
         return new BCryptPasswordEncoder();
     }
     @Override
-    protected void configure(AuthenticationManagerBuilder auth)
-        throws Exception{//
-        auth.userDetailsService(memberService)
-                .passwordEncoder(passwordEncoder());//
-        //spring security에서 인증은 authenticationmanager를 통해 이루어지며 AuthenticationManagerBuilder가
-        //authenticationmanager를 생성합니다. userDetailService를 구현하고 있는 객체로
-        //memberService를 지정해주며 비밀번호 암호화를 위해 passwordEncoder를 지정합니다.
+    public void configure(WebSecurity web)throws Exception{
+        web.ignoring().antMatchers("/css/**", "/js/**","/img/**");
     }
 }

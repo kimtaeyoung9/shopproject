@@ -38,13 +38,14 @@ public class ItemFormDto {
 
     private static ModelMapper modelMapper = new ModelMapper();
 
-    public Item createItem(){
+    public Item createItem() {
         return modelMapper.map(this, Item.class);//modelMapper를 이용해 엔티티 객체와 DTO 객체 간의 데이터를 복사하여
         //복사한 객체를 반환해주는 메소드입니다.
     }
 
-    public static ItemFormDto of(Item item){
+    public static ItemFormDto of(Item item) {
         return modelMapper.map(item, ItemFormDto.class);
         //modelMapper를 이용해 엔티티 객체와 DTO 객체 간의 데이터를 복사하여 복사한 객체를 반환해주는 메소드입니다.
     }
+
 }

@@ -1,12 +1,15 @@
 package com.shopproject.entity;
 
 import com.shopproject.constant.ItemSellStatus;
+import com.shopproject.dto.ItemFormDto;
+import com.shopproject.exception.OutOfStockException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.util.List;
+
 @Entity
 @Table(name = "item")
 @Getter
@@ -34,8 +37,29 @@ public class Item extends BaseEntity{
     @Enumerated(EnumType.STRING)
     private ItemSellStatus itemSellStatus; //상품 판매 상태
 
-    private LocalDateTime regTime; //등록시간
+    //private LocalDateTime regTime; //등록시간
 
-    private LocalDateTime updateTime; //수정시간
+    //private LocalDateTime updateTime; //수정시간
 
+    @ManyToMany
+    @JoinTable(
+            name = "member_item",
+            joinColumns = @JoinColumn(name = "member_id"),
+            inverseJoinColumns = @JoinColumn(name = "item_id")
+    )
+    private List<Member> member;
+    public void updateItem(ItemFormDto itemFormDto){
+        this.itemNm = itemFormDto.getItemNm();
+        this.price = itemFormDto.getPrice();
+        this.stockNumber = itemFormDto.getStockNumber();
+        this.itemDetail = itemFormDto.getItemDetail();
+        this.itemSellStatus = itemFormDto.getItemSellStatus();
+    }
+    public void removeStock(int stockNumber){
+        int restStock = this.stockNumber - stockNumber;//상품의 재고 수량에서 주문 후 남은 재고수량을 구합니다.
+        if (restStock<0){
+            throw new OutOfStockException("상품 재고가 부족합니다. (현재 재고수량: "+this.stockNumber+")");//상품의 재고가 주문 수량보다 적을 경우 재고부족 예외처리
+        }
+        this.stockNumber = restStock;//주문 후 남은 재고 수량을 ㅅ아품의 현재 재고 값으로 할당.
+    }
 }

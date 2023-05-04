@@ -2,11 +2,15 @@ package com.shopproject.service;
 
 import com.shopproject.dto.ItemFormDto;
 import com.shopproject.dto.ItemImgDto;
+import com.shopproject.dto.ItemSearchDto;
+import com.shopproject.dto.MainItemDto;
 import com.shopproject.entity.Item;
 import com.shopproject.entity.ItemImg;
 import com.shopproject.repository.ItemImgRepository;
 import com.shopproject.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,5 +65,30 @@ public class ItemService {
         ItemFormDto itemFormDto = ItemFormDto.of(item);
         itemFormDto.setItemImgDtoList(itemImgDtoList);
         return itemFormDto;
+    }
+    public Long updateItem(ItemFormDto itemFormDto,
+                           List<MultipartFile> itemImgFileList) throws Exception{
+        //상품 수정
+        Item item = itemRepository.findById(itemFormDto.getId())//상품 등록 화면으로부터 전달 받은 상품 아이디를 이용해 상품 엔티티를 조회합니다.
+                .orElseThrow(EntityNotFoundException::new);
+        item.updateItem(itemFormDto);//상품 등록 화면으로 전달 받은 ItemFormDto를 통해 상품 엔티티를 업데이트합니다.
+
+        List<Long> itemImgIds = itemFormDto.getItemImgIds();//상품 이미지 아이디 리스트를 조회합니다.
+        //이미지 등록
+        for (int i=0;i<itemImgFileList.size();i++){
+            itemImgService.updateItemImg(itemImgIds.get(i),
+                    itemImgFileList.get(i));//상품 이미지 업데이트를 위해 updateItemImg()메소드에 상품 이미지 아이디와, 상품 이미지 파일정보를
+            //파라미터로 전달합니다.
+        }
+        return item.getId();
+    }
+    @Transactional(readOnly = true)
+    public Page<Item> getAdminItemPage(ItemSearchDto itemSearchDto,
+                                       Pageable pageable){
+        return itemRepository.getAdminItemPage(itemSearchDto, pageable);
+    }
+    @Transactional(readOnly = true)
+    public Page<MainItemDto> getMainItemPage(ItemSearchDto itemSearchDto, Pageable pageable){
+        return itemRepository.getMainItemPage(itemSearchDto, pageable);
     }
 }
