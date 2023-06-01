@@ -1,20 +1,24 @@
 package com.shopproject.controller;
 
 import com.shopproject.dto.OrderDto;
+import com.shopproject.dto.OrderHistDto;
 import com.shopproject.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
@@ -52,4 +56,30 @@ public class OrderController {
 
         return new ResponseEntity<Long>(orderId, HttpStatus.OK);//결과값으로 생성된 주문 번호와 요청이 성공했다는 HTTP 응답 상태 코드를 반환
     }
+    @GetMapping(value = {"/orders", "/orders/{page}"})
+    public String orderHist(@PathVariable("page") Optional<Integer> page, Principal principal, Model model){
+        Pageable pageable = PageRequest.of(page.isPresent() ? page.get() : 0, 5);//한 번에 가지고 올 주문의 개수는 5개로 설정
+
+        Page<OrderHistDto> orderHistDtoList = orderService.getOrderList(principal.getName(), pageable);//현재 로그인한 회원은 이메일과 페이징 객체를
+        //파라미터로 전달하여 화면에 전달한 줌누 목록 데이터를 리턴값으로 받습니다.
+
+        model.addAttribute("orders", orderHistDtoList);
+        model.addAttribute("page", pageable.getPageNumber());
+        model.addAttribute("maxPage",5);
+        return "/order/orderHist";
+    }
+    @PostMapping("/order/{orderId}/cancel")
+    public @ResponseBody ResponseEntity cancelOrder
+            (@PathVariable("orderId") Long orderId, Principal principal){
+
+        if (!orderService.validateOrder(orderId, principal.getName())){//자바스크립트에서 취소할 주문 번호는 조작이 가능하므로
+            //다른 사람의 주문을 취소하지 못하도록 주문 취소 권한을 검사
+            return new ResponseEntity<String>("주문 취소 권한이 없습니다.",
+                    HttpStatus.FORBIDDEN);
+        }
+
+        orderService.cancelOrder(orderId);//주문 취소 로직 호출
+        return new ResponseEntity<Long>(orderId,HttpStatus.OK);
+    }
+
 }

@@ -78,7 +78,7 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom{
     @Override
     public Page<MainItemDto> getMainItemPage(ItemSearchDto itemSearchDto,
                                              Pageable pageable){//검색어가 null이 아니면 상품명에 해당 검색어가 포함되는 상품을 조회하는 조건을 반환합니다.
-        QItem qItem = item;
+        QItem Item = QItem.item;
         QItemImg itemImg = QItemImg.itemImg;
 
         QueryResults<MainItemDto> results = queryFactory

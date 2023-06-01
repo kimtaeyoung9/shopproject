@@ -71,6 +71,7 @@
         }).open();
     }
 </script>
+
 </th:block>
 <div layout:fragment="content">
   <form action="/members/new" role="form" method="post" th:object="${memberFormDto}">
@@ -82,6 +83,7 @@
     <div class="form-group">
       <label th:for="email">이메일 주소</label>
       <input type="text" th:field="*{email}" class="form-control" placeholder="이메일을 입력해주세요.">
+
       <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="fieldError">Incorrect date</p>
     </div>
     <div class="form-group">

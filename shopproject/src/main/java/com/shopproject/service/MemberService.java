@@ -10,6 +10,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.Email;
+
 @Service
 @Transactional//비즈니스 로직을 담당하는 서비스 계층 클래스에 @Transactional 어노테이션을 선언합니다.
 //로직을 처리하다 에러가 발생하면 변경된 데이터를 로직을 수행하기 전 상태로 콜백 시켜줍니다.
@@ -47,4 +49,5 @@ public class MemberService implements UserDetailsService { //MemberService가 Us
                 .roles(member.getRole().toString())
                 .build();
     }
+
 }

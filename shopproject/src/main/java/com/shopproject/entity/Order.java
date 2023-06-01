@@ -13,7 +13,7 @@ import java.util.List;
 @Table(name = "orders")//정렬할 때 사용하는 order 키워드가 있기 때문에 Order 엔티티에 매핑되는 테이블로 orders를 지정합니다.
 @Getter
 @Setter
-public class Order{
+public class Order extends BaseEntity{
 
     @Id
     @GeneratedValue
@@ -59,5 +59,12 @@ public class Order{
             totalPrice += orderItem.getTotalPrice();
         }
         return totalPrice;
+    }
+    public void cancelOrder(){
+        this.orderStatus = OrderStatus.CANCEL;
+
+        for (OrderItem orderItem : orderItems){
+            orderItem.cancel();
+        }
     }
 }
